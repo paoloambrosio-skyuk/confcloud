@@ -44,11 +44,6 @@ class Application @Inject() (system: ActorSystem) extends Controller {
     WordWebSocketActor.props(out, wordStore)
   }
 
-  def test(word: String) = Action {
-    wordStore ! SendUpdate(Seq(word))
-    NoContent
-  }
-
   def vote = Action { implicit request =>
     Ok(views.html.vote(wordForm))
   }
