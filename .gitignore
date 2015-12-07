@@ -1,4 +1,5 @@
 target/
+journal/
 
 # Eclipse
 .project

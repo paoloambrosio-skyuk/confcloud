@@ -13,8 +13,10 @@ lazy val server = (project in file("server"))
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       jdbc,
+      "com.typesafe.akka" %% "akka-slf4j" % "2.4.0",
       "com.vmunier" %% "play-scalajs-scripts" % "0.3.0",
-      "com.typesafe.akka" %% "akka-contrib" % "2.3.13"
+      "com.typesafe.akka" %% "akka-contrib" % "2.3.13",
+      "com.typesafe.akka" %% "akka-persistence" % "2.4.1"
     )
   )
   .aggregate(projectToRef(client))

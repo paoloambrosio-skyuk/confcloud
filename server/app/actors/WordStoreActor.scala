@@ -3,6 +3,7 @@ package actors
 import akka.actor.{Actor, Props}
 import akka.contrib.pattern.DistributedPubSubExtension
 import akka.contrib.pattern.DistributedPubSubMediator.Publish
+import akka.persistence.PersistentActor
 
 import scala.collection.mutable
 
@@ -15,9 +16,11 @@ object WordStoreActor {
   def props() = Props(new WordStoreActor())
 }
 
-class WordStoreActor() extends Actor {
+class WordStoreActor() extends PersistentActor {
 
   import WordStoreActor._
+
+  override def persistenceId = "wordstore-actor"
 
   private val mediator = DistributedPubSubExtension(context.system).mediator
 
@@ -29,16 +32,21 @@ class WordStoreActor() extends Actor {
       "SBT" -> 1
     ).withDefaultValue(0)
 
-  def receive = {
-    case RequestUpdate => {
-      sender() ! WordUpdate(normalisedWords)
+  override def receiveCommand =  {
+    case RequestUpdate => sender ! WordUpdate(normalisedWords)
+      
+    case su: SendUpdate => persist(su)(handleUpdate)
+  }
+
+  override def receiveRecover = {
+    case su: SendUpdate => handleUpdate(su)
+  }
+
+  private def handleUpdate(sendUpdate: SendUpdate) = {
+    sendUpdate.words foreach { w =>
+      words(w) += 1
     }
-    case SendUpdate(newWords) => {
-      newWords foreach { w =>
-        words(w) += 1
-      }
-      mediator ! Publish("word-updates", WordUpdate(normalisedWords))
-    }
+    mediator ! Publish("word-updates", WordUpdate(normalisedWords))
   }
 
   private def normalisedWords = {
