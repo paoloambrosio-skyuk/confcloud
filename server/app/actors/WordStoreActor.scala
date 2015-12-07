@@ -1,6 +1,6 @@
 package actors
 
-import akka.actor.{Actor, Props}
+import akka.actor.Props
 import akka.contrib.pattern.DistributedPubSubExtension
 import akka.contrib.pattern.DistributedPubSubMediator.Publish
 import akka.persistence.PersistentActor
@@ -34,7 +34,7 @@ class WordStoreActor() extends PersistentActor {
 
   override def receiveCommand =  {
     case RequestUpdate => sender ! WordUpdate(normalisedWords)
-      
+
     case su: SendUpdate => persist(su)(handleUpdate)
   }
 
