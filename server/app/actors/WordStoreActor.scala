@@ -10,6 +10,7 @@ import scala.collection.mutable
 object WordStoreActor {
 
   case object RequestUpdate
+  case object CurrentWords
   case class SendUpdate(words: Seq[String])
   case class WordUpdate(words: Seq[(String, Int)])
 
@@ -36,7 +37,7 @@ class WordStoreActor() extends PersistentActor {
 
   override def receiveCommand =  {
     case RequestUpdate => sender ! WordUpdate(normalisedWords)
-
+    case CurrentWords => sender ! wordsCaseInsensitive.values.toSeq
     case su: SendUpdate => persist(su)(handleUpdate)
   }
 
