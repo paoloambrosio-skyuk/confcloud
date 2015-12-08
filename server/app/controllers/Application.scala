@@ -52,20 +52,17 @@ class Application @Inject() (system: ActorSystem) extends Controller {
   }
 
   def vote = Action.async { implicit request =>
-    val currentWordsF = wordStore ? CurrentWords
-    for {
-      cw <- currentWordsF.mapTo[Seq[String]]
-    } yield Ok(views.html.vote(wordForm, cw))
-
+    currentWords map { cw =>
+      Ok(views.html.vote(wordForm, cw))
+    }
   }
 
   def makeVote = Action.async { implicit request =>
     wordForm.bindFromRequest.fold(
       formWithErrors => {
-        val currentWordsF = wordStore ? CurrentWords
-        for {
-          cw <- currentWordsF.mapTo[Seq[String]]
-        } yield BadRequest(views.html.vote(formWithErrors, cw))
+        currentWords map { cw =>
+          BadRequest(views.html.vote(formWithErrors, cw))
+        }
       },
       word => Future { sendVote(word) }
     )
@@ -78,4 +75,10 @@ class Application @Inject() (system: ActorSystem) extends Controller {
     )
   }
 
+  def currentWords = {
+    val currentWordsF = wordStore ? CurrentWords
+    for {
+      cw <- currentWordsF.mapTo[Seq[String]]
+    } yield cw
+  }
 }
