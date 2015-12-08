@@ -1,4 +1,4 @@
-@(voteForm: Form[String])(implicit messages: Messages, flash: Flash)
+@(voteForm: Form[String], words: Seq[String])(implicit messages: Messages, flash: Flash)
 @import helper._
 
 <html>
@@ -14,11 +14,21 @@
                 <strong>Success!</strong> @success
             </div>
         }
+        <div class=container>
+            <h1>Scala Technology Cloud</h1>
+            <p>Vote for your Scala Tech...</p>
 
-        <form action="/vote" method="POST" >
-            <div class="form-group">
-                <input name="word" class="form-control input-lg" id="word" placeholder="">
-            </div>
-        </form>
+            <form action="/vote" method="POST" >
+                <div class="form-group">
+                    <input name="word" class="form-control input-lg" id="word" placeholder="">
+                </div>
+            </form>
+
+            <form action="/vote" method="POST" >
+                @words.sortWith(_.toLowerCase < _.toLowerCase).map { tech =>
+                <input type="submit" name="word" value="@tech" class="btn btn-default btn-lg"></input>
+                }
+            </form>
+        </div>
     </body>
 </html>

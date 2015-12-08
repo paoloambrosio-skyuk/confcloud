@@ -10,6 +10,7 @@ import scala.collection.mutable
 object WordStoreActor {
 
   case object RequestUpdate
+  case object CurrentWords
   case class SendUpdate(words: Seq[String])
   case class WordUpdate(words: Seq[(String, Int)])
 
@@ -32,9 +33,11 @@ class WordStoreActor() extends PersistentActor {
       "SBT" -> 1
     ).withDefaultValue(0)
 
+  private var wordsCaseInsensitive = words.keySet.map(w => w.toLowerCase -> w).toMap
+
   override def receiveCommand =  {
     case RequestUpdate => sender ! WordUpdate(normalisedWords)
-
+    case CurrentWords => sender ! wordsCaseInsensitive.values.toSeq
     case su: SendUpdate => persist(su)(handleUpdate)
   }
 
@@ -44,7 +47,8 @@ class WordStoreActor() extends PersistentActor {
 
   private def handleUpdate(sendUpdate: SendUpdate) = {
     sendUpdate.words foreach { w =>
-      words(w) += 1
+      wordsCaseInsensitive += (w.toLowerCase -> wordsCaseInsensitive.getOrElse(w.toLowerCase, w))
+      words(wordsCaseInsensitive(w.toLowerCase)) += 1
     }
     mediator ! Publish("word-updates", WordUpdate(normalisedWords))
   }
